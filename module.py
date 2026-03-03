@@ -34,3 +34,20 @@ PERMISSIONS = [
 'purchase_orders.delete_supplier',
 'purchase_orders.manage_settings',
 ]
+
+ROLE_PERMISSIONS = {
+    "admin": ["*"],
+    "manager": [
+        "add_purchaseorder",
+        "add_supplier",
+        "change_purchaseorder",
+        "change_supplier",
+        "view_purchaseorder",
+        "view_supplier",
+    ],
+    "employee": [
+        "add_purchaseorder",
+        "view_purchaseorder",
+        "view_supplier",
+    ],
+}

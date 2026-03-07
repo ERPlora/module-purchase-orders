@@ -3,6 +3,8 @@ Purchase Orders Module Views
 """
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
+from django.http import HttpResponse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, render as django_render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -114,6 +116,7 @@ def suppliers_list(request):
     }
 
 @login_required
+@htmx_view('purchase_orders/pages/supplier_add.html', 'purchase_orders/partials/supplier_add_content.html')
 def supplier_add(request):
     hub_id = request.session.get('hub_id')
     if request.method == 'POST':
@@ -133,10 +136,13 @@ def supplier_add(request):
         obj.notes = notes
         obj.is_active = is_active
         obj.save()
-        return _render_suppliers_list(request, hub_id)
-    return django_render(request, 'purchase_orders/partials/panel_supplier_add.html', {})
+        response = HttpResponse(status=204)
+        response['HX-Redirect'] = reverse('purchase_orders:suppliers_list')
+        return response
+    return {}
 
 @login_required
+@htmx_view('purchase_orders/pages/supplier_edit.html', 'purchase_orders/partials/supplier_edit_content.html')
 def supplier_edit(request, pk):
     hub_id = request.session.get('hub_id')
     obj = get_object_or_404(Supplier, pk=pk, hub_id=hub_id, is_deleted=False)
@@ -150,7 +156,7 @@ def supplier_edit(request, pk):
         obj.is_active = request.POST.get('is_active') == 'on'
         obj.save()
         return _render_suppliers_list(request, hub_id)
-    return django_render(request, 'purchase_orders/partials/panel_supplier_edit.html', {'obj': obj})
+    return {'obj': obj}
 
 @login_required
 @require_POST
@@ -267,6 +273,7 @@ def purchase_order_lines_list(request):
     }
 
 @login_required
+@htmx_view('purchase_orders/pages/purchase_order_line_add.html', 'purchase_orders/partials/purchase_order_line_add_content.html')
 def purchase_order_line_add(request):
     hub_id = request.session.get('hub_id')
     if request.method == 'POST':
@@ -280,10 +287,13 @@ def purchase_order_line_add(request):
         obj.unit_price = unit_price
         obj.total = total
         obj.save()
-        return _render_purchase_order_lines_list(request, hub_id)
-    return django_render(request, 'purchase_orders/partials/panel_purchase_order_line_add.html', {})
+        response = HttpResponse(status=204)
+        response['HX-Redirect'] = reverse('purchase_orders:purchase_order_lines_list')
+        return response
+    return {}
 
 @login_required
+@htmx_view('purchase_orders/pages/purchase_order_line_edit.html', 'purchase_orders/partials/purchase_order_line_edit_content.html')
 def purchase_order_line_edit(request, pk):
     hub_id = request.session.get('hub_id')
     obj = get_object_or_404(PurchaseOrderLine, pk=pk, hub_id=hub_id, is_deleted=False)
@@ -294,7 +304,7 @@ def purchase_order_line_edit(request, pk):
         obj.total = request.POST.get('total', '0') or '0'
         obj.save()
         return _render_purchase_order_lines_list(request, hub_id)
-    return django_render(request, 'purchase_orders/partials/panel_purchase_order_line_edit.html', {'obj': obj})
+    return {'obj': obj}
 
 @login_required
 @require_POST

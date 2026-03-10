@@ -17,7 +17,7 @@ from apps.modules_runtime.navigation import with_module_nav
 
 from .models import Supplier, PurchaseOrder, PurchaseOrderLine
 
-PER_PAGE_CHOICES = [10, 25, 50, 100]
+PER_PAGE_CHOICES = [12, 24, 48, 96, 0]
 
 
 # ======================================================================
@@ -51,7 +51,7 @@ SUPPLIER_SORT_FIELDS = {
 
 def _build_suppliers_context(hub_id, per_page=10):
     qs = Supplier.objects.filter(hub_id=hub_id, is_deleted=False).order_by('name')
-    paginator = Paginator(qs, per_page)
+    paginator = Paginator(qs, per_page if per_page > 0 else max(qs.count(), 1))
     page_obj = paginator.get_page(1)
     return {
         'suppliers': page_obj,
@@ -77,9 +77,9 @@ def suppliers_list(request):
     sort_dir = request.GET.get('dir', 'asc')
     page_number = request.GET.get('page', 1)
     current_view = request.GET.get('view', 'table')
-    per_page = int(request.GET.get('per_page', 10))
+    per_page = int(request.GET.get('per_page', 12))
     if per_page not in PER_PAGE_CHOICES:
-        per_page = 10
+        per_page = 12
 
     qs = Supplier.objects.filter(hub_id=hub_id, is_deleted=False)
 
@@ -99,7 +99,7 @@ def suppliers_list(request):
             return export_to_csv(qs, fields=fields, headers=headers, filename='suppliers.csv')
         return export_to_excel(qs, fields=fields, headers=headers, filename='suppliers.xlsx')
 
-    paginator = Paginator(qs, per_page)
+    paginator = Paginator(qs, per_page if per_page > 0 else max(qs.count(), 1))
     page_obj = paginator.get_page(page_number)
 
     if request.htmx and request.htmx.target == 'datatable-body':
@@ -208,7 +208,7 @@ PURCHASE_ORDER_LINE_SORT_FIELDS = {
 
 def _build_purchase_order_lines_context(hub_id, per_page=10):
     qs = PurchaseOrderLine.objects.filter(hub_id=hub_id, is_deleted=False).order_by('order')
-    paginator = Paginator(qs, per_page)
+    paginator = Paginator(qs, per_page if per_page > 0 else max(qs.count(), 1))
     page_obj = paginator.get_page(1)
     return {
         'purchase_order_lines': page_obj,
@@ -234,9 +234,9 @@ def purchase_order_lines_list(request):
     sort_dir = request.GET.get('dir', 'asc')
     page_number = request.GET.get('page', 1)
     current_view = request.GET.get('view', 'table')
-    per_page = int(request.GET.get('per_page', 10))
+    per_page = int(request.GET.get('per_page', 12))
     if per_page not in PER_PAGE_CHOICES:
-        per_page = 10
+        per_page = 12
 
     qs = PurchaseOrderLine.objects.filter(hub_id=hub_id, is_deleted=False)
 
@@ -256,7 +256,7 @@ def purchase_order_lines_list(request):
             return export_to_csv(qs, fields=fields, headers=headers, filename='purchase_order_lines.csv')
         return export_to_excel(qs, fields=fields, headers=headers, filename='purchase_order_lines.xlsx')
 
-    paginator = Paginator(qs, per_page)
+    paginator = Paginator(qs, per_page if per_page > 0 else max(qs.count(), 1))
     page_obj = paginator.get_page(page_number)
 
     if request.htmx and request.htmx.target == 'datatable-body':
